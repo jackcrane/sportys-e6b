@@ -6,6 +6,7 @@ import UIKit
 struct DeviceView: View {
     @ObservedObject var computer: E6BComputer
     @State private var showSettings = false
+    @Environment(\.theme) private var theme
 
     static let size = CGSize(width: 360, height: 690)
 
@@ -17,13 +18,13 @@ struct DeviceView: View {
             numericKeys
         }
         .frame(width: Self.size.width, height: Self.size.height)
-        .sheet(isPresented: $showSettings) { SettingsView() }
+        .sheet(isPresented: $showSettings) { SettingsView().environment(\.theme, theme) }
     }
 
     // MARK: Body shell
 
     private var body_: some View {
-        Color(white: 0.13)
+        theme.body
             .frame(width: Self.size.width, height: Self.size.height)
     }
 
@@ -31,7 +32,7 @@ struct DeviceView: View {
 
     private var lcdGlass: some View {
         let lcd = computer.lcd()
-        let bg = Color(red: 0.69, green: 0.72, blue: 0.67)
+        let bg = theme.lcdBackground
         return ZStack {
             // Extends far upward so it also fills the safe area above the device
             Rectangle()
@@ -56,8 +57,7 @@ struct DeviceView: View {
     }
 
     private var armed: Bool { computer.lcd().convArmed }
-    private let convColor = Color(red: 1.0, green: 0.68, blue: 0.1)
-
+    
     private var functionKeys: some View {
         let rows: [[FKey]] = [
             [FKey(id: .hdg, title: "HDG/GS\nP-D/ALT", note: nil), FKey(id: .speed, title: "SPEED", note: nil),
@@ -74,14 +74,14 @@ struct DeviceView: View {
                     VStack(spacing: 1) {
                         Text(k.note ?? " ")
                             .font(.system(size: 6.5, weight: .semibold))
-                            .foregroundStyle(Color(white: 0.62))
+                            .foregroundStyle(theme.noteText)
                             .frame(height: 8)
                         KeyButton(computer: computer, id: k.id, shape: .pill, highlight: k.id == .conv && armed) {
                             Text(k.title)
                                 .font(.system(size: k.title.contains("\n") ? 8.8 : (k.title.count == 1 ? 12 : 10.5),
                                               weight: .heavy))
                                 .multilineTextAlignment(.center)
-                                .foregroundStyle(k.id == .conv && armed ? Color.black : Color(white: 0.92))
+                                .foregroundStyle(k.id == .conv && armed ? theme.accentText : theme.keyText)
                                 .lineSpacing(-1)
                         }
                         .frame(width: 77, height: 29)
@@ -129,16 +129,16 @@ struct DeviceView: View {
                     VStack(spacing: 2) {
                         Text(k.conv)
                             .font(.system(size: 6.6, weight: armed ? .heavy : .semibold))
-                            .foregroundStyle(armed ? convColor : Color(white: 0.90))
+                            .foregroundStyle(armed ? theme.accent : theme.convLabel)
                             .frame(height: 8)
                         KeyButton(computer: computer, id: k.id, shape: .oval, override: k.symbol == nil ? nil : cogPressed) {
                             if let sym = k.symbol {
                                 Image(systemName: sym).font(.system(size: 15, weight: .heavy))
-                                    .foregroundStyle(Color(white: 0.95))
+                                    .foregroundStyle(theme.keyText)
                             } else {
                                 Text(k.title)
                                     .font(.system(size: k.title.count > 1 ? 13 : 22, weight: .heavy, design: .rounded))
-                                    .foregroundStyle(Color(white: 0.95))
+                                    .foregroundStyle(theme.keyText)
                             }
                         }
                         .frame(width: 52, height: 34)
@@ -177,6 +177,7 @@ private struct KeyButton<Label: View>: View {
 private struct KeyStyle: ButtonStyle {
     let shape: KeyShape
     var highlight = false
+    @Environment(\.theme) private var theme
 
     func makeBody(configuration: Configuration) -> some View {
         let pressed = configuration.isPressed
@@ -184,10 +185,10 @@ private struct KeyStyle: ButtonStyle {
         return configuration.label
             .background(
                 RoundedRectangle(cornerRadius: corner, style: .continuous)
-                    .fill(highlight ? Color(red: 1.0, green: 0.68, blue: 0.1)
+                    .fill(highlight ? theme.accent
                           : shape == .pill
-                          ? Color(white: pressed ? 0.20 : 0.30)
-                          : Color(white: pressed ? 0.30 : 0.22))
+                          ? (pressed ? theme.pillKeyPressed : theme.pillKey)
+                          : (pressed ? theme.ovalKeyPressed : theme.ovalKey))
             )
             .contentShape(Rectangle())
     }

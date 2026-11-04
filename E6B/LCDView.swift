@@ -4,6 +4,7 @@ import SwiftUI
 /// printed labels, with the function menu along the bottom.
 struct LCDView: View {
     @ObservedObject var computer: E6BComputer
+    @Environment(\.theme) private var theme
 
     static let size = CGSize(width: 310, height: 306)
 
@@ -12,7 +13,7 @@ struct LCDView: View {
             let state = computer.lcd(at: timeline.date)
             let blink = timeline.date.timeIntervalSinceReferenceDate.truncatingRemainder(dividingBy: 1.0) < 0.6
             Canvas { ctx, size in
-                LCDPainter(state: state, blinkOn: blink).paint(&ctx, size)
+                LCDPainter(state: state, blinkOn: blink, theme: theme).paint(&ctx, size)
             }
             .frame(width: Self.size.width, height: Self.size.height)
         }
@@ -24,6 +25,7 @@ struct LCDView: View {
 private struct LCDPainter {
     let state: LCDState
     let blinkOn: Bool
+    let theme: Theme
 
     // Layout
     let rowPitch: CGFloat = 36
@@ -37,7 +39,7 @@ private struct LCDPainter {
     let menuPitch: CGFloat = 11
     let menuCenters: [CGFloat] = [34, 101, 164, 226, 278]
 
-    var ink: Color { Color(red: 0.08, green: 0.09, blue: 0.08) }
+    var ink: Color { theme.ink }
 
     static let menuLayout: [(String, Int, Int)] = Functions.all.map { ($0.name, $0.col, $0.line) }
 
@@ -77,7 +79,7 @@ private struct LCDPainter {
             let badge = CGRect(x: 0, y: 0, width: 62, height: 16)
             ctx.fill(Path(roundedRect: badge, cornerRadius: 3), with: .color(ink))
             ctx.draw(Text("CONV").font(.system(size: 11, weight: .heavy))
-                        .foregroundColor(Color(red: 0.69, green: 0.72, blue: 0.67)),
+                        .foregroundColor(theme.lcdBackground),
                      at: CGPoint(x: 31, y: 8.5), anchor: .center)
         }
         if let toast = state.toast {
@@ -85,7 +87,7 @@ private struct LCDPainter {
             ctx.fill(Path(roundedRect: box, cornerRadius: 6), with: .color(ink))
             for (i, line) in toast.components(separatedBy: "\n").enumerated() {
                 ctx.draw(Text(line).font(.system(size: 13, weight: .bold))
-                            .foregroundColor(Color(red: 0.69, green: 0.72, blue: 0.67)),
+                            .foregroundColor(theme.lcdBackground),
                          at: CGPoint(x: box.midX, y: box.midY + (i == 0 ? -10 : 10)), anchor: .center)
             }
         }

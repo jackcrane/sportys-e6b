@@ -6,11 +6,32 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		D7829C206ED32AF9A164A837 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BD38E37D15EA9844B7063E20 /* Foundation.framework */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		469802F881CA11D08D1E74F1 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A10000009 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A10000006;
+			remoteInfo = E6B;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
 		A10000001 /* E6B.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = E6B.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		BD38E37D15EA9844B7063E20 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
+		FD224FB2A6E5B88888C50AEF /* E6BTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = E6BTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		112F45BB09560C9652863BB5 /* E6BTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = E6BTests;
+			sourceTree = "<group>";
+		};
 		A10000002 /* E6B */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = E6B;
@@ -19,6 +40,14 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		0218C7175DAFF035BD041F6F /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D7829C206ED32AF9A164A837 /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		A10000003 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -29,11 +58,29 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		467F8BE4311B1E31E1E10D46 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				8C0B8D881F43F5E81102CE26 /* iOS */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		8C0B8D881F43F5E81102CE26 /* iOS */ = {
+			isa = PBXGroup;
+			children = (
+				BD38E37D15EA9844B7063E20 /* Foundation.framework */,
+			);
+			name = iOS;
+			sourceTree = "<group>";
+		};
 		A10000004 = {
 			isa = PBXGroup;
 			children = (
 				A10000002 /* E6B */,
 				A10000005 /* Products */,
+				467F8BE4311B1E31E1E10D46 /* Frameworks */,
+				112F45BB09560C9652863BB5 /* E6BTests */,
 			);
 			sourceTree = "<group>";
 		};
@@ -41,6 +88,7 @@
 			isa = PBXGroup;
 			children = (
 				A10000001 /* E6B.app */,
+				FD224FB2A6E5B88888C50AEF /* E6BTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -48,6 +96,27 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		174DB0D9EC09400524C2EE84 /* E6BTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 8CF14DDA8F3D747643D9F2C4 /* Build configuration list for PBXNativeTarget "E6BTests" */;
+			buildPhases = (
+				934A50C33F3ECE8CE0707D85 /* Sources */,
+				0218C7175DAFF035BD041F6F /* Frameworks */,
+				F5BD3FC39F8B709BA9DD50DD /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				F0376686C9742BD252DB29D7 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				112F45BB09560C9652863BB5 /* E6BTests */,
+			);
+			name = E6BTests;
+			productName = E6BTests;
+			productReference = FD224FB2A6E5B88888C50AEF /* E6BTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		A10000006 /* E6B */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = A10000010 /* Build configuration list for PBXNativeTarget "E6B" */;
@@ -97,6 +166,7 @@
 			projectRoot = "";
 			targets = (
 				A10000006 /* E6B */,
+				174DB0D9EC09400524C2EE84 /* E6BTests */,
 			);
 		};
 /* End PBXProject section */
@@ -109,9 +179,23 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		F5BD3FC39F8B709BA9DD50DD /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		934A50C33F3ECE8CE0707D85 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		A10000007 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -121,7 +205,32 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		F0376686C9742BD252DB29D7 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = E6B;
+			target = A10000006 /* E6B */;
+			targetProxy = 469802F881CA11D08D1E74F1 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
+		6E2B857C3D1086E220B91B34 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.jackcrane.sportys-e6b.tests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/E6B.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/E6B";
+			};
+			name = Debug;
+		};
 		A10000011 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -220,9 +329,35 @@
 			};
 			name = Release;
 		};
+		CDDDC274D1882774FE91D605 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.jackcrane.sportys-e6b.tests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/E6B.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/E6B";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		8CF14DDA8F3D747643D9F2C4 /* Build configuration list for PBXNativeTarget "E6BTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				CDDDC274D1882774FE91D605 /* Release */,
+				6E2B857C3D1086E220B91B34 /* Debug */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		A1000000F /* Build configuration list for PBXProject "E6B" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

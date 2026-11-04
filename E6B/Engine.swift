@@ -482,7 +482,9 @@ final class E6BComputer: ObservableObject {
         }
         let (raw, hms) = conv(v)
         // The unit shows conversions to 2 decimals (4 for HMS -> decimal hours).
-        let places = k == .times ? 4.0 : 2.0
+        // Decimal hours -> HMS must keep full precision so the seconds are right
+        // (9.5125 h is 9:30:45, not 9:30:36).
+        let places: Double = k == .times ? 4 : (k == .d6 ? 6 : 2)
         let r = (raw * pow(10, places)).rounded() / pow(10, places)
         resetEntry()
         entry.computed = r

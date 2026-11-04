@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ContentView: View {
     @StateObject private var computer = E6BComputer()
+    @Environment(\.theme) private var theme
 
     var body: some View {
         GeometryReader { safe in
@@ -12,7 +13,7 @@ struct ContentView: View {
                             (geo.size.height - top - bottom) / DeviceView.size.height)
             let h = DeviceView.size.height * scale
             ZStack {
-                Color(white: 0.13)
+                theme.body
                 DeviceView(computer: computer)
                     .scaleEffect(scale)
                     .frame(width: DeviceView.size.width * scale, height: h)
