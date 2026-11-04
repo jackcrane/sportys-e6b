@@ -74,8 +74,20 @@ private struct LCDPainter {
         drawMenu(&ctx)
 
         if state.convArmed {
-            ctx.draw(Text("CONV").font(.system(size: 7.4, weight: .bold)).foregroundColor(ink),
-                     at: CGPoint(x: 2, y: 4), anchor: .leading)
+            let badge = CGRect(x: 0, y: 0, width: 62, height: 16)
+            ctx.fill(Path(roundedRect: badge, cornerRadius: 3), with: .color(ink))
+            ctx.draw(Text("CONV").font(.system(size: 11, weight: .heavy))
+                        .foregroundColor(Color(red: 0.69, green: 0.72, blue: 0.67)),
+                     at: CGPoint(x: 31, y: 8.5), anchor: .center)
+        }
+        if let toast = state.toast {
+            let box = CGRect(x: 8, y: 96, width: 294, height: 70)
+            ctx.fill(Path(roundedRect: box, cornerRadius: 6), with: .color(ink))
+            for (i, line) in toast.components(separatedBy: "\n").enumerated() {
+                ctx.draw(Text(line).font(.system(size: 13, weight: .bold))
+                            .foregroundColor(Color(red: 0.69, green: 0.72, blue: 0.67)),
+                         at: CGPoint(x: box.midX, y: box.midY + (i == 0 ? -10 : 10)), anchor: .center)
+            }
         }
         if state.calc {
             ctx.draw(Text("CALC").font(.system(size: 7.4, weight: .bold)).foregroundColor(ink),
@@ -88,19 +100,20 @@ private struct LCDPainter {
     func drawMenu(_ ctx: inout GraphicsContext) {
         let all = state.menuVisible.count >= Functions.all.count
         for (name, col, line) in Self.menuLayout {
-            guard state.menuVisible.contains(name) || name == state.menuActive else { continue }
-            if name == state.menuCursor && !blinkOn { continue }
+            let blinkedOut = name == state.menuCursor && !blinkOn
+            let dimmed = blinkedOut || !(state.menuVisible.contains(name) || name == state.menuActive)
             let active = name == state.menuActive
             let text = active ? "*\(name)*" : name
             let font = Font.system(size: 7.6, weight: active || name == state.menuCursor ? .bold : .medium)
-            ctx.draw(Text(text).font(font).foregroundColor(ink.opacity(0.92)),
+            ctx.draw(Text(text).font(font).foregroundColor(ink.opacity(dimmed ? 0.22 : 0.92)),
                      at: CGPoint(x: menuCenters[col], y: menuTop + CGFloat(line) * menuPitch + 5),
                      anchor: .center)
         }
-        if all || state.timerLabel {
+        let timerDim = !all && !state.timerLabel
+        do {
             let text = state.timerLabel ? "*TIMER*" : "TIMER"
             ctx.draw(Text(text).font(.system(size: 7.6, weight: state.timerLabel ? .bold : .medium))
-                        .foregroundColor(ink.opacity(0.92)),
+                        .foregroundColor(ink.opacity(timerDim ? 0.22 : 0.92)),
                      at: CGPoint(x: menuCenters[4], y: menuTop + 5), anchor: .center)
         }
     }

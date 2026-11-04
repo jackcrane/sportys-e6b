@@ -42,6 +42,8 @@ struct DeviceView: View {
                 .frame(width: LCDView.size.width, height: LCDView.size.height)
                 .offset(y: 0)
         }
+        .contentShape(Rectangle())
+        .onTapGesture { computer.dismissToast() }
         .position(x: 180, y: 161)
     }
 
@@ -52,6 +54,9 @@ struct DeviceView: View {
         let title: String
         let note: String?
     }
+
+    private var armed: Bool { computer.lcd().convArmed }
+    private let convColor = Color(red: 1.0, green: 0.68, blue: 0.1)
 
     private var functionKeys: some View {
         let rows: [[FKey]] = [
@@ -71,12 +76,12 @@ struct DeviceView: View {
                             .font(.system(size: 6.5, weight: .semibold))
                             .foregroundStyle(Color(white: 0.62))
                             .frame(height: 8)
-                        KeyButton(computer: computer, id: k.id, shape: .pill) {
+                        KeyButton(computer: computer, id: k.id, shape: .pill, highlight: k.id == .conv && armed) {
                             Text(k.title)
                                 .font(.system(size: k.title.contains("\n") ? 8.8 : (k.title.count == 1 ? 12 : 10.5),
                                               weight: .heavy))
                                 .multilineTextAlignment(.center)
-                                .foregroundStyle(Color(white: 0.92))
+                                .foregroundStyle(k.id == .conv && armed ? Color.black : Color(white: 0.92))
                                 .lineSpacing(-1)
                         }
                         .frame(width: 77, height: 29)
@@ -123,8 +128,8 @@ struct DeviceView: View {
                     let k = rows[r][c]
                     VStack(spacing: 2) {
                         Text(k.conv)
-                            .font(.system(size: 6.6, weight: .semibold))
-                            .foregroundStyle(Color(white: 0.90))
+                            .font(.system(size: 6.6, weight: armed ? .heavy : .semibold))
+                            .foregroundStyle(armed ? convColor : Color(white: 0.90))
                             .frame(height: 8)
                         KeyButton(computer: computer, id: k.id, shape: .oval, override: k.symbol == nil ? nil : cogPressed) {
                             if let sym = k.symbol {
@@ -154,6 +159,7 @@ private struct KeyButton<Label: View>: View {
     let id: KeyID
     let shape: KeyShape
     var override: (() -> Void)? = nil
+    var highlight = false
     @ViewBuilder var label: () -> Label
 
     var body: some View {
@@ -164,12 +170,13 @@ private struct KeyButton<Label: View>: View {
             label()
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-        .buttonStyle(KeyStyle(shape: shape))
+        .buttonStyle(KeyStyle(shape: shape, highlight: highlight))
     }
 }
 
 private struct KeyStyle: ButtonStyle {
     let shape: KeyShape
+    var highlight = false
 
     func makeBody(configuration: Configuration) -> some View {
         let pressed = configuration.isPressed
@@ -177,7 +184,8 @@ private struct KeyStyle: ButtonStyle {
         return configuration.label
             .background(
                 RoundedRectangle(cornerRadius: corner, style: .continuous)
-                    .fill(shape == .pill
+                    .fill(highlight ? Color(red: 1.0, green: 0.68, blue: 0.1)
+                          : shape == .pill
                           ? Color(white: pressed ? 0.20 : 0.30)
                           : Color(white: pressed ? 0.30 : 0.22))
             )

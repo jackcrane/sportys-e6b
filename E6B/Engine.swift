@@ -37,6 +37,7 @@ struct LCDState {
     var timerLabel = false
     var convArmed = false
     var calc = false
+    var toast: String? = nil
 }
 
 // MARK: - Entry line
@@ -93,6 +94,7 @@ final class E6BComputer: ObservableObject {
     private var pendingOp: Op? = nil
     private var operandFresh = false
     private var convArmed = false
+    private var toastShown = false
 
     // Values the real unit carries from one function to the next.
     private var saved: [Key: Double] = [:]
@@ -115,17 +117,29 @@ final class E6BComputer: ObservableObject {
     private var timerDown = false
     private var timerRef = Date()
     private var timerSetting = false
+    private var timerFields = ["", "", ""]
+    private var timerFocus = 0
 
     // MARK: Key handling
 
+    /// Hides the "enter the FROM value" message (any key press or LCD tap).
+    func dismissToast() {
+        guard toastShown else { return }
+        toastShown = false
+        objectWillChange.send()
+    }
+
     func press(_ k: KeyID) {
         defer { objectWillChange.send() }
+        toastShown = false
 
         if convArmed {
             convArmed = false
             handleConv(k)
             return
         }
+
+        if mode == .timer && timerSetting && handleTimerEdit(k) { return }
 
         switch k {
         case .power: break
@@ -266,7 +280,7 @@ final class E6BComputer: ObservableObject {
         case .clock:
             break
         case .timer:
-            break
+            if timerSetting { commitTimerSetting() }
         case .off:
             break
         }
@@ -334,12 +348,10 @@ final class E6BComputer: ObservableObject {
     private func handleSign() {
         switch mode {
         case .timer:
-            if !timerSetting {
-                let v = timerValue(at: Date())
-                timerSecs = v
-                timerRef = Date()
-                timerDown.toggle()
-            }
+            let v = timerValue(at: Date())
+            timerSecs = v
+            timerRef = Date()
+            timerDown.toggle()
             return
         case .menu, .prompt: break
         case .clock where clockSetting: break
@@ -463,7 +475,11 @@ final class E6BComputer: ObservableObject {
         default: break
         }
         guard mode == .menu || mode == .prompt else { return }
-        guard let conv = Self.conversions[k], let v = displayedValue(), !entry.error else { return }
+        guard let conv = Self.conversions[k] else { return }
+        guard let v = displayedValue(), !entry.error else {
+            toastShown = true
+            return
+        }
         let (raw, hms) = conv(v)
         // The unit shows conversions to 2 decimals (4 for HMS -> decimal hours).
         let places = k == .times ? 4.0 : 2.0
@@ -558,22 +574,57 @@ final class E6BComputer: ObservableObject {
             return
         }
         if timerSetting {
-            if entry.isEmpty {
-                timerSecs = 0; timerRunning = false
-            } else if let v = displayedValue() {
-                timerSecs = abs(v) * 3600
-                timerDown = true
-                timerRef = Date()
-                timerRunning = true
-            }
-            timerSetting = false
-            resetEntry()
+            commitTimerSetting()
             return
         }
         let now = Date()
         timerSecs = timerValue(at: now)
         timerRef = now
         timerRunning.toggle()
+    }
+
+    /// Keys while the timer is being edited (hh blinking, : moves to the next
+    /// field, ENTER starts the countdown). Returns true when the key was used.
+    private func handleTimerEdit(_ k: KeyID) -> Bool {
+        switch k {
+        case .d0, .d1, .d2, .d3, .d4, .d5, .d6, .d7, .d8, .d9:
+            if timerFields[timerFocus].count < 2 { timerFields[timerFocus].append(k.digit!) }
+            return true
+        case .colon:
+            timerFocus = min(2, timerFocus + 1)
+            return true
+        case .clear:
+            if timerFields[timerFocus].isEmpty {
+                timerFocus = max(0, timerFocus - 1)
+            } else {
+                timerFields[timerFocus] = ""
+            }
+            return true
+        case .plusMinus:
+            timerDown.toggle()
+            return true
+        case .enter, .timer:
+            commitTimerSetting()
+            return true
+        case .dot, .plus, .minus, .times, .divide, .equals:
+            return true
+        default:
+            return false
+        }
+    }
+
+    /// Stores the entered hh:mm:ss and starts it running immediately.
+    private func commitTimerSetting() {
+        let n = timerFields.map { Double($0) ?? 0 }
+        let secs = n[0] * 3600 + n[1] * 60 + n[2]
+        timerSecs = secs
+        if secs == 0 { timerDown = false }
+        timerRef = Date()
+        timerRunning = true
+        timerSetting = false
+        timerFields = ["", "", ""]
+        timerFocus = 0
+        resetEntry()
     }
 
     private func enterTimerSetting() {
@@ -591,6 +642,11 @@ final class E6BComputer: ObservableObject {
         if mode == .prompt || mode == .result { leaveFunction() }
         mode = .timer
         resetEntry()
+        timerSecs = 0
+        timerRunning = false
+        timerDown = true
+        timerFields = ["", "", ""]
+        timerFocus = 0
         timerSetting = true
     }
 
@@ -601,6 +657,7 @@ final class E6BComputer: ObservableObject {
         guard mode != .off else { return s }
         s.on = true
         s.convArmed = convArmed
+        if toastShown { s.toast = "Enter the FROM value first,\nTHEN press CONV + the tool" }
 
         func set(_ p: LabelPos, _ text: String, _ style: LabelStyle) {
             s.labels[p] = (text, style)
@@ -691,15 +748,19 @@ final class E6BComputer: ObservableObject {
             s.menuVisible = Set(Functions.all.map(\.name))
             s.timerLabel = true
             let pos = LabelTable.pos(row: 3, label: "TIME")
-            if timerSetting && !entry.isEmpty {
-                let (txt, n) = entryText()
-                s.rows[2] = RowText(text: txt, negative: n)
-                set(pos, "TIME", .blink)
+            if timerSetting {
+                let blinkOn = now.timeIntervalSinceReferenceDate.truncatingRemainder(dividingBy: 1.0) < 0.6
+                let parts: [String] = (0..<3).map { i in
+                    if i == timerFocus && !blinkOn { return "  " }
+                    return String(repeating: "0", count: 2 - timerFields[i].count) + timerFields[i]
+                }
+                s.rows[2] = RowText(text: parts.joined(separator: ":"), negative: false)
+                set(pos, "TIME", .normal)
             } else {
                 let v = timerValue(at: now)
                 let total = Int(abs(v).rounded(.down))
                 s.rows[2] = RowText(text: Fmt.hmsString(total), negative: v < 0 && total >= 0 && v <= -0.0001)
-                set(pos, "TIME", timerSetting ? .blink : .normal)
+                set(pos, "TIME", .normal)
             }
         }
         return s
