@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>E6B — a flight computer for iPhone</title>
+<meta name="description" content="An iPhone recreation of the Sporty's E6B electronic flight computer.">
+<style>
+  :root { --fg:#111; --muted:#666; --line:#e6e6e3; --bg:#fff; }
+  * { box-sizing:border-box; }
+  html { scroll-behavior:smooth; }
+  body { margin:0; background:var(--bg); color:var(--fg); font:17px/1.55 -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif; -webkit-font-smoothing:antialiased; }
+  .wrap { max-width:1040px; margin:0 auto; padding:0 28px; }
+  nav { padding:28px 0; font-weight:600; letter-spacing:.02em; }
+
+  /* ---------- iPhone frame ---------- */
+  .device { position:relative; width:var(--w, 260px); container-type:inline-size; flex:none; }
+  .device .rail {
+    position:relative; padding:1.9cqw; border-radius:17cqw;
+    background:linear-gradient(145deg,#6b6c6f 0%,#2b2c2e 18%,#8a8b8e 36%,#2a2b2d 55%,#6f7073 78%,#2b2c2e 100%);
+    box-shadow:0 1px 0 rgba(255,255,255,.35) inset, 0 0 0 .25cqw #151516, 0 5cqw 9cqw -3cqw rgba(0,0,0,.45), 0 1.5cqw 3cqw -1cqw rgba(0,0,0,.35);
+  }
+  .device .bezel { background:#000; padding:2.4cqw; border-radius:15cqw; box-shadow:0 0 0 .3cqw #1c1c1e inset; }
+  .device img { display:block; width:100%; height:auto; border-radius:12.6cqw; }
+  .device .glare { position:absolute; inset:0; border-radius:17cqw; pointer-events:none;
+    background:linear-gradient(115deg, rgba(255,255,255,.10) 0%, rgba(255,255,255,0) 28%); }
+  .device .btn { position:absolute; width:1.4cqw; background:linear-gradient(90deg,#47484b,#1f2022); border-radius:.7cqw; }
+  .device .btn.l { left:-.9cqw; }
+  .device .btn.r { right:-.9cqw; background:linear-gradient(270deg,#47484b,#1f2022); }
+  .device .action { top:17%; height:3.4%; }
+  .device .volu { top:24%; height:6.5%; }
+  .device .vold { top:32%; height:6.5%; }
+  .device .power { top:28%; height:10.5%; }
+
+  /* ---------- hero ---------- */
+  .hero { display:grid; grid-template-columns:1fr auto; gap:64px; align-items:center; padding:40px 0 88px; }
+  h1 { font-size:56px; line-height:1.05; letter-spacing:-.03em; margin:0 0 18px; font-weight:700; }
+  .lead { font-size:20px; color:var(--muted); max-width:26em; margin:0 0 28px; }
+  .links a { color:var(--fg); text-decoration:none; border-bottom:1px solid var(--fg); padding-bottom:1px; }
+
+  /* ---------- carousel ---------- */
+  .functions { border-top:1px solid var(--line); padding:72px 0 80px; }
+  .head { display:flex; justify-content:space-between; align-items:end; gap:24px; margin-bottom:36px; }
+  h2 { font-size:34px; line-height:1.1; letter-spacing:-.02em; margin:0 0 8px; font-weight:700; }
+  .head p { margin:0; color:var(--muted); max-width:30em; }
+  .arrows { display:flex; gap:8px; flex:none; }
+  .arrows button { width:44px; height:44px; border-radius:50%; border:1px solid var(--fg); background:none; color:var(--fg); font-size:18px; cursor:pointer; }
+  .arrows button { display:flex; align-items:center; justify-content:center; padding:0; }
+  .arrows button svg { display:block; }
+  .arrows button svg { transform:rotate(45deg); }
+  .arrows .prev svg { transform:rotate(-45deg) scaleX(-1); }
+  .arrows button:hover { background:var(--fg); color:#fff; }
+  .track { display:flex; gap:24px; overflow-x:auto; scroll-snap-type:x mandatory; padding:0 max(28px, calc((100vw - 984px)/2)) 8px; scrollbar-width:none; }
+  .track::-webkit-scrollbar { display:none; }
+  .track { align-items:stretch; }
+  .slide { flex:none; width:350px; scroll-snap-align:center; display:flex; flex-direction:column; border:1px solid var(--line); border-radius:28px; background:#fff; overflow:hidden; }
+  .shot { --w:280px; height:360px; padding-top:40px; display:flex; justify-content:center; align-items:flex-start; overflow:hidden; }
+  .copy { flex:1; border-top:1px solid var(--line); padding:20px 40px 36px; background:#fff; position:relative; z-index:1; }
+  .slide h3 { font-size:28px; line-height:1.15; letter-spacing:-.015em; margin:0 0 12px; }
+  .slide p { margin:0; color:#444; font-size:16px; }
+
+  footer p { margin:0 0 8px; }
+  footer a { color:inherit; }
+  footer .flinks a { margin-right:20px; }
+  footer { border-top:1px solid var(--line); padding:32px 0 56px; color:var(--muted); font-size:14px; }
+
+  @media (max-width:820px) {
+    h1 { font-size:40px; }
+    .hero { grid-template-columns:1fr; gap:40px; padding-bottom:56px; }
+    .hero .device { margin:0 auto; }
+    .head { flex-direction:column; align-items:flex-start; }
+    .slide { width:min(350px, 86vw); }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <nav>E6B</nav>
+
+  <section class="hero">
+    <div>
+      <h1>Use the Sporty's E6B with just your iPhone.</h1>
+      <p class="lead">This app is carefully designed to replicate the functionality and interface of the Sporty's E6B, so your practice on your phone helps you practice for the Written.</p>
+      <p class="links"><a href="#functions">What it does</a></p>
+    </div>
+    <div class="device" style="--w:300px">
+      <i class="btn l action"></i><i class="btn l volu"></i><i class="btn l vold"></i><i class="btn r power"></i>
+      <div class="rail"><div class="bezel"><img src="s_hdg.png" alt="E6B showing a heading and groundspeed solution"></div></div>
+      <div class="glare"></div>
+    </div>
+  </section>
+</div>
+
+<section class="functions" id="functions">
+  <div class="wrap head">
+    <div>
+      <h2>It's just the same thing</h2>
+      <p>This app is designed to carefully replicate the features of the Sporty's E6B, like...</p>
+    </div>
+    <div class="arrows">
+      <button class="prev" aria-label="Previous" data-dir="-1"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4 20-7z"/></svg></button>
+      <button aria-label="Next" data-dir="1"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4 20-7z"/></svg></button>
+    </div>
+  </div>
+
+  <div class="track" id="track">
+
+    <article class="slide">
+      <div class="shot"><div class="device"><i class="btn l action"></i><i class="btn l volu"></i><i class="btn l vold"></i><i class="btn r power"></i><div class="rail"><div class="bezel"><img src="s_hdg.png" alt="HDG/GS result" loading="lazy"></div></div><div class="glare"></div></div></div>
+      <div class="copy"><h3>Heading and groundspeed</h3>
+        <p>Give it the wind, your course and your true airspeed, and it returns groundspeed, heading and wind correction angle. The same key also works out pressure altitude and density altitude.</p></div>
+    </article>
+
+    <article class="slide">
+      <div class="shot"><div class="device"><i class="btn l action"></i><i class="btn l volu"></i><i class="btn l vold"></i><i class="btn r power"></i><div class="rail"><div class="bezel"><img src="s_speed.png" alt="Groundspeed from distance and time" loading="lazy"></div></div><div class="glare"></div></div></div>
+      <div class="copy"><h3>Speed</h3>
+        <p>Groundspeed from distance and time. True airspeed from calibrated airspeed, altitude and temperature, with Mach number. Also converts Mach to true airspeed.</p></div>
+    </article>
+
+    <article class="slide">
+      <div class="shot"><div class="device"><i class="btn l action"></i><i class="btn l volu"></i><i class="btn l vold"></i><i class="btn r power"></i><div class="rail"><div class="bezel"><img src="s_required.png" alt="Fuel required from time and fuel flow" loading="lazy"></div></div><div class="glare"></div></div></div>
+      <div class="copy"><h3>Fuel, climb and descent</h3>
+        <p>Fuel for a given time, climb rate and gradient, and the descent rate to reach a fix at a set altitude. Also the airspeed and heading you need to make a target groundspeed.</p></div>
+    </article>
+
+    <article class="slide">
+      <div class="shot"><div class="device"><i class="btn l action"></i><i class="btn l volu"></i><i class="btn l vold"></i><i class="btn r power"></i><div class="rail"><div class="bezel"><img src="s_wind.png" alt="Crosswind and headwind components" loading="lazy"></div></div><div class="glare"></div></div></div>
+      <div class="copy"><h3>Wind</h3>
+        <p>Crosswind and headwind for any runway. Or enter your track, heading and speeds to find out what wind you actually have. Cloud base from temperature and dew point.</p></div>
+    </article>
+
+    <article class="slide">
+      <div class="shot"><div class="device"><i class="btn l action"></i><i class="btn l volu"></i><i class="btn l vold"></i><i class="btn r power"></i><div class="rail"><div class="bezel"><img src="s_flight.png" alt="Endurance from fuel and fuel flow" loading="lazy"></div></div><div class="glare"></div></div></div>
+      <div class="copy"><h3>Time, distance and fuel</h3>
+        <p>Distance flown, leg time, endurance, range, fuel burn per hour, and how far out to start your descent. Values you just worked out, like groundspeed, carry over to the next function.</p></div>
+    </article>
+
+    <article class="slide">
+      <div class="shot"><div class="device"><i class="btn l action"></i><i class="btn l volu"></i><i class="btn l vold"></i><i class="btn r power"></i><div class="rail"><div class="bezel"><img src="s_wb.png" alt="Weight and balance totals" loading="lazy"></div></div><div class="glare"></div></div></div>
+      <div class="copy"><h3>Weight and balance</h3>
+        <p>Enter each load by weight and arm, or weight and moment. It keeps a running total of gross weight, moment and CG. It can also give CG as a percent of MAC.</p></div>
+    </article>
+
+    <article class="slide">
+      <div class="shot"><div class="device"><i class="btn l action"></i><i class="btn l volu"></i><i class="btn l vold"></i><i class="btn r power"></i><div class="rail"><div class="bezel"><img src="s_conv.png" alt="Nautical to statute miles conversion" loading="lazy"></div></div><div class="glare"></div></div></div>
+      <div class="copy"><h3>Calculator and conversions</h3>
+        <p>A regular calculator. Every number key has a conversion printed above it: nautical to statute miles and km, feet to meters, gallons to liters, pounds to kilograms, fuel volume to weight, °F to °C, inHg to millibars, and hours to H:M:S.</p></div>
+    </article>
+
+    <article class="slide">
+      <div class="shot"><div class="device"><i class="btn l action"></i><i class="btn l volu"></i><i class="btn l vold"></i><i class="btn r power"></i><div class="rail"><div class="bezel"><img src="s_clock.png" alt="Zulu, home and local clock" loading="lazy"></div></div><div class="glare"></div></div></div>
+      <div class="copy"><h3>Clock and timer</h3>
+        <p>Shows Zulu, home and local time at once. The timer counts up or down.</p></div>
+    </article>
+
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <p>Not affiliated with Sporty's. This is not a flight planning tool and should only be used for study and practice. Double-check results.</p>
+    <p class="flinks"><a href="privacy.html">Privacy Policy</a><a href="mailto:jack@cranedigitalplatforms.com">Contact</a></p>
+    <p>&copy; <span id="year">2026</span> Crane Digital Platforms, LLC.</p>
+  </div>
+</footer>
+
+<script>
+  document.getElementById('year').textContent = new Date().getFullYear();
+  const track = document.getElementById('track');
+  document.querySelectorAll('.arrows button').forEach(b =>
+    b.addEventListener('click', () => track.scrollBy({ left: b.dataset.dir * 400, behavior: 'smooth' })));
+</script>
+</body>
+</html>
